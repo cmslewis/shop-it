@@ -4,6 +4,7 @@ import "./App.scss";
 import { PaginationControls } from "./components/PaginationControls";
 import { Pitch, IChord, harmonize } from "./util/harmonize";
 import { pageGetResultStartIndex, pageGetResultEndIndex } from "./util/pagingUtils";
+import { formatInteger } from "./util/numberUtils";
 
 const DEFAULT_PAGE_SIZE = 50;
 const ENTER_KEY = 13;
@@ -92,9 +93,11 @@ export class App extends React.PureComponent {
 
     return (
       <Card>
-        <p><strong>Here {isAre} {results.length} {ways} to harmonize this melody.</strong></p>
+        <p><strong>Here {isAre} {formatInteger(results.length)} {ways} to harmonize this melody.</strong></p>
         {this.renderPaginationControls()}
-        {pageResultItems}
+        <div className="hz-chord-results">
+          {pageResultItems}
+        </div>
         {this.renderPaginationControls(false)}
       </Card>
     );

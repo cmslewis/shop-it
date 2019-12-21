@@ -10,6 +10,10 @@ body {
   max-width: 960px;
 }
 
+.hz-chord-results {
+  overflow-x: auto;
+}
+
 .hz-chord-result {
   display: flex;
   align-items: baseline;
@@ -20,6 +24,7 @@ body {
 }
 
 .hz-chord-result-id {
+  flex: 0 0 auto;
   width: 60px;
   border-right: 1px solid $light-gray2;
   padding: 0 5px;
