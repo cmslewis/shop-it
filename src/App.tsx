@@ -4,26 +4,51 @@ import "./App.scss";
 import { ResultsPane } from "./components/ResultsPane";
 import { Pitch, IChord, harmonize } from "./harmonization/harmonize";
 
-const ENTER_KEY = 13;
+const KeyCodes = {
+  BACKSPACE: 8,
+  ENTER: 13,
+  SPACE: 32,
+  ARROW_LEFT: 37,
+  ARROW_DOWN: 40,
+  DELETE: 46,
+  DIGIT_3: 51,
+  LETTER_A: 65,
+  LETTER_B: 66,
+  LETTER_G: 71,
+};
+
+const MAX_MELODY_LENGTH = 15;
 
 interface IAppState {
   melodyInput: string;
   results: IChord[][] | undefined;
+  showMelodyLengthWarning: boolean;
 }
 
-export class App extends React.PureComponent {
+export class App extends React.PureComponent<{}, IAppState> {
   public state: IAppState = {
     melodyInput: "E D C D E",
     results: undefined,
+    showMelodyLengthWarning: false,
   };
 
   public render() {
+    const { showMelodyLengthWarning } = this.state;
+    const intent = showMelodyLengthWarning ? Intent.WARNING : Intent.PRIMARY;
+    const helperText = showMelodyLengthWarning
+      ? "Melodies can't be longer than 15 notes—otherwise your browser may freeze."
+      : "Accidentals like F# and Bb are supported. Melodies can be no longer than 15 notes."
     return (
       <div className="hz-app">
         <h1>BBS Chord Suggestions</h1>
-        <FormGroup label="Enter a melody in C major:" helperText="Put a space between each pitch name. Accidentals like F# and Bb are supported.">
+        <FormGroup
+          label="Enter a melody in C major:"
+          helperText={helperText}
+          intent={showMelodyLengthWarning ? Intent.WARNING : Intent.NONE}
+        >
           <ControlGroup fill={true}>
             <InputGroup
+              intent={intent}
               large={true}
               onChange={this.handleMelodyInputChange}
               onKeyDown={this.handleMelodyInputKeyDown}
@@ -32,7 +57,8 @@ export class App extends React.PureComponent {
             />
             <Button
               className={Classes.FIXED}
-              intent={Intent.PRIMARY}
+              disabled={showMelodyLengthWarning}
+              intent={intent}
               icon="music"
               large={true}
               onClick={this.handleButtonClick}
@@ -47,30 +73,82 @@ export class App extends React.PureComponent {
   }
 
   private handleMelodyInputChange = (e: React.FormEvent<HTMLInputElement>) => {
+    const melodyInput = this.getSanitizedMelodyInput((e.target as HTMLInputElement).value);
     this.setState({
-      melodyInput: this.getSanitizedMelodyInput((e.target as HTMLInputElement).value)
+      melodyInput,
+      showMelodyLengthWarning: this.parseMelodyNotes(melodyInput).length > MAX_MELODY_LENGTH,
     });
   };
 
   private handleMelodyInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.which === ENTER_KEY) {
+    const keyCode = e.which;
+    if (keyCode === KeyCodes.ENTER && !this.state.showMelodyLengthWarning) {
       this.handleButtonClick();
+    } else {
+      const isPitchBaseName = keyCode >= KeyCodes.LETTER_A && keyCode <= KeyCodes.LETTER_G;
+      const isSharpSymbolKey = keyCode === KeyCodes.DIGIT_3;
+      const isFlatSymbolKey = keyCode === KeyCodes.LETTER_B;
+      const isSpaceBar = keyCode === KeyCodes.SPACE;
+      const isArrowKey = keyCode >= KeyCodes.ARROW_LEFT && keyCode <= KeyCodes.ARROW_DOWN;
+      const isBackspace = keyCode === KeyCodes.BACKSPACE;
+      const isDelete = keyCode === KeyCodes.DELETE;
+
+      if (
+        !isPitchBaseName &&
+        !isSharpSymbolKey &&
+        !isFlatSymbolKey &&
+        !isSpaceBar &&
+        !isArrowKey &&
+        !isBackspace &&
+        !isDelete
+      ) {
+        e.preventDefault();
+      }
     }
   };
 
   private handleButtonClick = () => {
     const { melodyInput } = this.state;
-    const melody = melodyInput.trim().split(/\s+/) as Pitch[];
+    const melody = this.parseMelodyNotes(melodyInput);
     // TODO: Validate pitches.
     this.setState({ results: harmonize(melody) });
   };
 
-  private getSanitizedMelodyInput(melodyInput: string) {
-    return melodyInput.toUpperCase().replace("3", "#");
+  private parseMelodyNotes(melodyString: string): Pitch[] {
+    return melodyString.trim().split(/\s+/) as Pitch[];;
+  }
+
+  private getSanitizedMelodyInput(melodyInput: string): string {
+    const result: string[] = [];
+    for (let i = 0; i < melodyInput.length; i++) {
+      let char = melodyInput[i].toUpperCase();
+      if (char === "3") {
+        char = "#";
+      }
+      if (i > 0 && isPitchName(char)) {
+        result.push(" ");
+      }
+      if (char != " ") {
+        result.push(char);
+      }
+    }
+    return result.join("").trim();
   };
 
   private maybeRenderResults() {
     const { results } = this.state;
     return results === undefined ? undefined : <ResultsPane results={results}></ResultsPane>;
   }
+}
+
+function isPitchName(char: string) {
+  return (
+    char === "A" ||
+    char === "B" ||
+    char === "C" ||
+    char === "D" ||
+    char === "E" ||
+    char === "F" ||
+    char === "G"
+  );
 }
