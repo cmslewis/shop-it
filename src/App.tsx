@@ -1,13 +1,15 @@
 import React from "react";
-import { InputGroup, FormGroup, ControlGroup, Button, Intent, Classes, ButtonGroup } from "@blueprintjs/core";
+import { InputGroup, FormGroup, ControlGroup, Button, Intent, Classes, ButtonGroup, Card } from "@blueprintjs/core";
 import "./App.scss";
 import { Pitch, IChord, harmonize } from "./util/harmonize";
 
-const PAGE_SIZE = 50;
+const DEFAULT_PAGE_SIZE = 50;
+const ENTER_KEY = 13;
 
 interface IAppState {
   melodyInput: string;
   pageIndex: number;
+  pageSize: number;
   results: IChord[][] | undefined;
 }
 
@@ -15,6 +17,7 @@ export class App extends React.PureComponent {
   public state: IAppState = {
     melodyInput: "E D C D E",
     pageIndex: 0,
+    pageSize: DEFAULT_PAGE_SIZE,
     results: undefined,
   };
 
@@ -27,6 +30,7 @@ export class App extends React.PureComponent {
             <InputGroup
               large={true}
               onChange={this.handleMelodyInputChange}
+              onKeyDown={this.handleMelodyInputKeyDown}
               placeholder="Example: E D C D E E E D D D E C C"
               value={this.state.melodyInput}
             />
@@ -52,7 +56,13 @@ export class App extends React.PureComponent {
     });
   };
 
-  private handleButtonClick = (e: React.MouseEvent<HTMLElement>) => {
+  private handleMelodyInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.which === ENTER_KEY) {
+      this.handleButtonClick();
+    }
+  };
+
+  private handleButtonClick = () => {
     const { melodyInput } = this.state;
     const melody = melodyInput.trim().split(/\s+/) as Pitch[];
     // TODO: Validate pitches.
@@ -64,23 +74,30 @@ export class App extends React.PureComponent {
   };
 
   private maybeRenderResults() {
-    const { pageIndex, results } = this.state;
+    const { pageIndex, pageSize, results } = this.state;
     if (results === undefined) {
       return undefined;
     }
 
-    const firstFewResults = results.slice(pageIndex * PAGE_SIZE, pageIndex * PAGE_SIZE + PAGE_SIZE);
+    const pageStartIndex = pageIndex * pageSize;
+    const pageEndIndexExclusive = Math.min(results.length, pageStartIndex + pageSize);
+
+    const firstFewResults = results.slice(pageStartIndex, pageEndIndexExclusive);
     const resultItems = firstFewResults.map(this.renderResultItem);
 
     const isAre = resultItems.length === 1 ? "is" : "are";
     const ways = resultItems.length === 1 ? "way" : "ways";
 
     return (
-      <div>
-        <p><strong>There {isAre} {results.length}+ {ways} to harmonize this melody.</strong></p>
+      <Card>
+        <p><strong>Here {isAre} {results.length} {ways} to harmonize this melody.</strong></p>
+        <div className="hz-results-bounds-text">
+          {/* 1-indexed */}
+          Showing {pageStartIndex + 1} through {pageEndIndexExclusive} <em>(sorted lexicographically)</em>
+        </div>
         {this.renderPaginationControls(results)}
         {resultItems}
-      </div>
+      </Card>
     );
   }
 
@@ -100,19 +117,12 @@ export class App extends React.PureComponent {
   }
 
   private renderPaginationControls(allResults: IChord[][]) {
-    const { pageIndex } = this.state;
-    const numPages = Math.ceil(allResults.length / PAGE_SIZE);
-
-    const pageButtons: JSX.Element[] = [];
-    for (let i = 0; i < numPages; i++) {
-      pageButtons.push(<Button active={i === pageIndex} onClick={() => this.setState({ pageIndex: i })}>{i + 1}</Button>)
-    }
-
+    const { pageIndex, pageSize } = this.state;
+    const numPages = Math.ceil(allResults.length / pageSize);
     return (
       <div className="hz-pagination-controls">
         <ButtonGroup>
           <Button disabled={pageIndex === 0} intent={Intent.PRIMARY} onClick={this.handlePrevButtonClick}>Prev</Button>
-          {pageButtons}
           <Button disabled={pageIndex === numPages - 1} intent={Intent.PRIMARY} onClick={this.handleNextButtonClick}>Next</Button>
         </ButtonGroup>
       </div>
