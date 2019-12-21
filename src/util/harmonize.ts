@@ -25,7 +25,7 @@ export const Chord: Record<ChordName, IChord> = {
     },
     Csharp7: {
         pitches: ["C#", "F" /* E#. TODO: Enharmonic spelling. */, "G#", "B"],
-        name: "Csharp7",
+        name: "C#7",
     },
     Dm7: {
         pitches: ["D", "F", "A", "C"],
@@ -37,7 +37,7 @@ export const Chord: Record<ChordName, IChord> = {
     },
     Dsharp7: {
         pitches: ["D#", "G" /* F## */, "A#", "C#"],
-        name: "Dsharp7",
+        name: "D#7",
     },
     Em7: {
         pitches: ["E", "G", "B", "D"],
