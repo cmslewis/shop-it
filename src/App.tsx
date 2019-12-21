@@ -17,17 +17,20 @@ const KeyCodes = {
   LETTER_G: 71,
 };
 
+const DEFAULT_MELODY: Pitch[] = ["E", "D", "C", "D", "E"];
 const MAX_MELODY_LENGTH = 15;
 
 interface IAppState {
   melodyInput: string;
+  melodyNotes: Pitch[];
   results: IChord[][] | undefined;
   showMelodyLengthWarning: boolean;
 }
 
 export class App extends React.PureComponent<{}, IAppState> {
   public state: IAppState = {
-    melodyInput: "E D C D E",
+    melodyInput: DEFAULT_MELODY.join(" "),
+    melodyNotes: DEFAULT_MELODY,
     results: undefined,
     showMelodyLengthWarning: false,
   };
