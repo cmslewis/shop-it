@@ -219,12 +219,17 @@ const PerfectFourthRules: RulesList = [
     [Chord.F7, Chord.C7],
 ];
 
-const rules: IChordProgressionBigram[] = [
+const basicRules: IChordProgressionBigram[] = [
+    ...RootDeparturesRules,
+    ...CircleOfFifthsRules,
+];
+
+const allRules: IChordProgressionBigram[] = [
     ...RootDeparturesRules,
     ...CircleOfFifthsRules,
     ...DeceptiveCadenceRules,
     ...HalfStepStrictRules,
-    // ...HalfStepLooseRules, // Disabled by default;
+    ...HalfStepLooseRules, // Disabled by default;
     ...WholeStepRules,
     ...MinorThirdRules,
     ...MajorThirdRules,
@@ -234,13 +239,11 @@ const rules: IChordProgressionBigram[] = [
 
 const ValidFirstChords = new Set<IChord>([Chord.C, Chord.Am7]);
 
-let p2c: Map<string, Set<IChord>>;
-let c2c: Map<string, Set<IChord>>;
+let p2c: Map<string, Set<IChord>> = new Map();
+let c2c_all: Map<string, Set<IChord>> = new Map();
+let c2c_basic: Map<string, Set<IChord>> = new Map();
 
-function buildMaps(rules: IChordProgressionBigram[]) {
-    p2c = new Map();
-    c2c = new Map();
-
+function buildP2CMap() {
     for (const chord of Object.values(Chord)) {
         for (const pitch of chord.pitches) {
             if (!p2c.has(pitch)) {
@@ -248,6 +251,11 @@ function buildMaps(rules: IChordProgressionBigram[]) {
             }
             p2c.get(pitch)!.add(chord);
         }
+    }
+}
+
+function buildC2CMap(rules: IChordProgressionBigram[], c2c: Map<string, Set<IChord>>) {
+    for (const chord of Object.values(Chord)) {
         // Let every chord progress to itself without an explicit rule.
         c2c.set(chord.name, new Set([chord]));
     }
@@ -257,15 +265,17 @@ function buildMaps(rules: IChordProgressionBigram[]) {
     }
 }
 
-buildMaps(rules);
+buildP2CMap();
+buildC2CMap(allRules, c2c_all);
+buildC2CMap(basicRules, c2c_basic);
 
-export function harmonize(melodyNotes: MelodyNote[]): IChord[][] {
+export function harmonize(melodyNotes: MelodyNote[], circleOfFifthsOnly = false): IChord[][] {
     const result: IChord[][] = [];
-    harmonizeRec(melodyNotes, [], result);
+    harmonizeRec(melodyNotes, [], circleOfFifthsOnly, result);
     return result.sort(chordListComparator);
 }
 
-function harmonizeRec(melodyNotes: MelodyNote[], chordsSoFar: IChord[], out: IChord[][]): void {
+function harmonizeRec(melodyNotes: MelodyNote[], chordsSoFar: IChord[], circleOfFifthsOnly: boolean, out: IChord[][]): void {
     if (melodyNotes.length === 0) {
         return;
     }
@@ -274,7 +284,7 @@ function harmonizeRec(melodyNotes: MelodyNote[], chordsSoFar: IChord[], out: ICh
     const firstPitch = isMelodyNoteString(firstMelodyNote) ? firstMelodyNote : firstMelodyNote.pitch;
 
     const chordsWithPitch = getChordsContainingPitch(firstPitch);
-    const chordsFromPrev = getChordsFollowingFinalChord(chordsSoFar);
+    const chordsFromPrev = getChordsFollowingFinalChord(chordsSoFar, circleOfFifthsOnly);
 
     let chordsToConsider = chordsSoFar.length === 0 ? chordsWithPitch : setIntersect(chordsWithPitch, chordsFromPrev);
     if (!isMelodyNoteString(firstMelodyNote) && firstMelodyNote.chord != null) {
@@ -289,7 +299,7 @@ function harmonizeRec(melodyNotes: MelodyNote[], chordsSoFar: IChord[], out: ICh
         const remainingMelodyNotes = melodyNotes.slice(1);
         for (const c of chordsToConsider) {
             if (chordsSoFar.length !== 0 || ValidFirstChords.has(c)) {
-                harmonizeRec(remainingMelodyNotes, [...chordsSoFar, c], out);
+                harmonizeRec(remainingMelodyNotes, [...chordsSoFar, c], circleOfFifthsOnly, out);
             }
         }
     }
@@ -299,11 +309,12 @@ function getChordsContainingPitch(pitch: Pitch): Set<IChord> {
     return p2c.get(pitch) || new Set();
 }
 
-function getChordsFollowingFinalChord(chords: IChord[]): Set<IChord> {
+function getChordsFollowingFinalChord(chords: IChord[], circleOfFifthsOnly: boolean): Set<IChord> {
     if (chords.length === 0) {
         return new Set();
     }
-    return c2c.get(chords[chords.length - 1].name) || new Set();
+    const c2cMap = circleOfFifthsOnly ? c2c_basic : c2c_all;
+    return c2cMap.get(chords[chords.length - 1].name) || new Set();
 }
 
 function setIntersect<T>(a: Set<T>, b: Set<T>) {

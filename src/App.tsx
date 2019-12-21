@@ -1,5 +1,5 @@
 import React from "react";
-import { InputGroup, FormGroup, ControlGroup, Button, Intent, Classes } from "@blueprintjs/core";
+import { InputGroup, FormGroup, ControlGroup, Button, Intent, Classes, Position, Menu, MenuItem, Popover } from "@blueprintjs/core";
 import "./App.scss";
 import { ResultsPane } from "./components/ResultsPane";
 import { Pitch, IChord, harmonize } from "./harmonization/harmonize";
@@ -22,6 +22,7 @@ const DEFAULT_MELODY: Pitch[] = ["E", "D", "C", "D", "E"];
 const MAX_MELODY_LENGTH = 15;
 
 interface IAppState {
+  circleOfFifthsOnly: boolean;
   melodyInput: string;
   melodyNotes: Pitch[];
   results: IChord[][] | undefined;
@@ -30,6 +31,7 @@ interface IAppState {
 
 export class App extends React.PureComponent<{}, IAppState> {
   public state: IAppState = {
+    circleOfFifthsOnly: true,
     melodyInput: DEFAULT_MELODY.join(" "),
     melodyNotes: DEFAULT_MELODY,
     results: undefined,
@@ -38,7 +40,6 @@ export class App extends React.PureComponent<{}, IAppState> {
 
   public render() {
     const { showMelodyLengthWarning } = this.state;
-    const intent = showMelodyLengthWarning ? Intent.WARNING : Intent.PRIMARY;
     const helperText = showMelodyLengthWarning
       ? "Melodies can't be longer than 15 notes—otherwise your browser may freeze."
       : "Accidentals like F# and Bb are supported. Melodies can be no longer than 15 notes."
@@ -52,19 +53,18 @@ export class App extends React.PureComponent<{}, IAppState> {
         >
           <ControlGroup fill={true}>
             <InputGroup
-              intent={intent}
-              large={true}
+              intent={showMelodyLengthWarning ? Intent.WARNING : Intent.NONE}
               onChange={this.handleMelodyInputChange}
               onKeyDown={this.handleMelodyInputKeyDown}
               placeholder="Example: E D C D E E E D D D E C C"
+              rightElement={this.renderSearchBarRightElement()}
               value={this.state.melodyInput}
             />
             <Button
               className={Classes.FIXED}
               disabled={showMelodyLengthWarning}
-              intent={intent}
+              intent={showMelodyLengthWarning ? Intent.WARNING : Intent.PRIMARY}
               icon="music"
-              large={true}
               onClick={this.handleButtonClick}
             >
               Harmonize!
@@ -72,6 +72,60 @@ export class App extends React.PureComponent<{}, IAppState> {
           </ControlGroup>
         </FormGroup>
         {this.maybeRenderResults()}
+      </div>
+    );
+  }
+
+  private renderSearchBarRightElement() {
+    const { circleOfFifthsOnly } = this.state;
+
+    const CIRCLE_TEXT = "Circle of fifths only";
+    const ALL_TEXT = "All progressions";
+
+    const buttonText = circleOfFifthsOnly ? CIRCLE_TEXT : ALL_TEXT;
+
+    return (
+      <Popover
+        content={
+          <Menu className="hz-flag-menu">
+            <MenuItem
+              active={circleOfFifthsOnly}
+              className="hz-flag-menu-item"
+              icon="refresh"
+              onClick={this.circleOfFifthsFlagEnable}
+              text={this.renderHarmonizationOptionsMenuText(CIRCLE_TEXT, "Only strict V7 → I progressions will be used. v7 will also be permitted.")}
+            />
+            <MenuItem
+              active={!circleOfFifthsOnly}
+              className="hz-flag-menu-item"
+              icon="layout"
+              onClick={this.circleOfFifthsFlagDisable}
+              text={this.renderHarmonizationOptionsMenuText(ALL_TEXT, "Other progressions may also be used (e.g. half-step motion, tritone substitutions).")}
+            />
+          </Menu>
+        }
+        position={Position.BOTTOM_RIGHT}
+      >
+        <Button minimal={true} rightIcon="caret-down">
+          {buttonText}
+        </Button>
+      </Popover>
+    )
+  }
+
+  private circleOfFifthsFlagEnable = () => {
+    this.setState({ circleOfFifthsOnly: true });
+  };
+
+  private circleOfFifthsFlagDisable = () => {
+    this.setState({ circleOfFifthsOnly: false });
+  };
+
+  private renderHarmonizationOptionsMenuText(title: string, helperText: string) {
+    return (
+      <div className="hz-flag-menu-item-text">
+        <div className="hz-flag-menu-item-text-title">{title}</div>
+        <div className="hz-flag-menu-item-text-muted">{helperText}</div>
       </div>
     );
   }
@@ -114,10 +168,10 @@ export class App extends React.PureComponent<{}, IAppState> {
   };
 
   private handleButtonClick = () => {
-    const { melodyInput } = this.state;
+    const { circleOfFifthsOnly, melodyInput } = this.state;
     const melody = this.parseMelodyNotes(melodyInput);
     // TODO: Validate pitches.
-    this.setState({ results: harmonize(melody) });
+    this.setState({ results: harmonize(melody, circleOfFifthsOnly) });
   };
 
   private parseMelodyNotes(melodyString: string): Pitch[] {

@@ -9,3 +9,22 @@ body {
   margin: 0 auto;
   max-width: 960px;
 }
+
+.hz-flag-menu {
+  max-width: 280px;
+}
+
+.hz-flag-menu-item-text-title {
+  font-weight: 600;
+}
+
+.hz-flag-menu-item-text-muted {
+  font-size: 11px;
+  color: $pt-text-color-muted;
+  white-space: initial;
+  line-height: $pt-line-height;
+
+  .hz-flag-menu-item.bp3-active & {
+    color: $white;
+  }
+}
