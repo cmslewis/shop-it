@@ -2,7 +2,7 @@ import React from "react";
 import { InputGroup, FormGroup, ControlGroup, Button, Intent, Classes } from "@blueprintjs/core";
 import "./App.scss";
 import { ResultsPane } from "./components/ResultsPane";
-import { Pitch, IChord, harmonize } from "./util/harmonize";
+import { Pitch, IChord, harmonize } from "./harmonization/harmonize";
 
 const ENTER_KEY = 13;
 

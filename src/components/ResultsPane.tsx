@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Card } from "@blueprintjs/core";
-import { IChord } from "../util/harmonize";
+import { IChord } from "../harmonization/harmonize";
 import { formatInteger } from "../util/numberUtils";
 import { pageGetResultStartIndex, pageGetResultEndIndex } from "../util/pagingUtils";
 import { PaginationControls } from "./PaginationControls";
