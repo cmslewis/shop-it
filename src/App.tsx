@@ -46,9 +46,9 @@ export class App extends React.PureComponent<{}, IAppState> {
       : "Accidentals like F# and Bb are supported. Melodies can be no longer than 15 notes."
     return (
       <div className="hz-app">
-        <h1>BBS Chord Suggestions</h1>
+        <h1>BBS Harmonizer</h1>
         <FormGroup
-          label="Enter a melody in C major:"
+          label="Enter a melody in C major, then click 'Harmonize' to see suggested barbershop chord progressions."
           helperText={helperText}
           intent={showMelodyLengthWarning ? Intent.WARNING : Intent.NONE}
         >
