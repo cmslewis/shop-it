@@ -95,7 +95,7 @@ export class App extends React.PureComponent {
         <p><strong>Here {isAre} {results.length} {ways} to harmonize this melody.</strong></p>
         {this.renderPaginationControls()}
         {pageResultItems}
-        {this.renderPaginationControls()}
+        {this.renderPaginationControls(false)}
       </Card>
     );
   }
@@ -115,7 +115,7 @@ export class App extends React.PureComponent {
     return <div className="hz-chord-result" key={resultStr}>{elements}</div>;
   }
 
-  private renderPaginationControls() {
+  private renderPaginationControls(withBottomMargin = true) {
     const { pageIndex, pageSize, results } = this.state;
 
     if (results === undefined) {
@@ -129,6 +129,7 @@ export class App extends React.PureComponent {
         pageSize={pageSize}
         onPageChange={this.handlePageChange}
         onPageSizeChange={this.handlePageSizeChange}
+        withBottomMargin={withBottomMargin}
       />
     );
   }

@@ -1,4 +1,5 @@
 import { ButtonGroup, Button } from "@blueprintjs/core";
+import classNames from "classnames";
 import * as React from "react";
 import { pageGetResultStartIndex, pageGetResultEndIndex } from "../util/pagingUtils";
 
@@ -10,11 +11,13 @@ export interface IPaginationControlsProps {
   pageSize: number;
   onPageChange: (pageIndex: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  /** @default true */
+  withBottomMargin?: boolean;
 }
 
 export class PaginationControls extends React.PureComponent<IPaginationControlsProps> {
   public render() {
-    const { numResults, pageIndex, pageSize } = this.props;
+    const { numResults, pageIndex, pageSize, withBottomMargin } = this.props;
 
     const isPrevDisabled = pageIndex === 0;
     const isNextDisabled = pageIndex === this.getNumPages() - 1;
@@ -23,7 +26,7 @@ export class PaginationControls extends React.PureComponent<IPaginationControlsP
     const resultsEndIndexExclusive = pageGetResultEndIndex(pageIndex, pageSize, numResults);
 
     return (
-      <div className="hz-pagination-controls">
+      <div className={classNames("hz-pagination-controls", { "-with-bottom-margin": withBottomMargin })}>
         <div className="hz-pagination-controls-left">
           <ButtonGroup>
             <Button disabled={isPrevDisabled} icon="chevron-backward" onClick={this.handleStartButtonClick} />

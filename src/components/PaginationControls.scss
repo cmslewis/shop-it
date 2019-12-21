@@ -2,9 +2,11 @@
 
 .hz-pagination-controls {
   display: flex;
-  // justify-content: center;
   margin-top: 20px;
-  margin-bottom: 20px;
+
+  &.-with-bottom-margin {
+    margin-bottom: 20px;
+  }
 }
 
 .hz-pagination-controls-text {
