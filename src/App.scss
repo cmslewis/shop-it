@@ -44,6 +44,11 @@ body {
   }
 }
 
+.hz-app {
+  margin: 0 auto;
+  max-width: 960px;
+}
+
 .hz-chord-result {
   display: flex;
 }
@@ -57,4 +62,11 @@ body {
 
 .hz-chord-arrow {
   color: $pt-text-color-muted;
+}
+
+.hz-pagination-controls {
+  display: flex;
+  // justify-content: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
