@@ -15,6 +15,7 @@ const KeyCodes = {
   LETTER_A: 65,
   LETTER_B: 66,
   LETTER_G: 71,
+  LETTER_V: 86,
 };
 
 const DEFAULT_MELODY: Pitch[] = ["E", "D", "C", "D", "E"];
@@ -87,6 +88,8 @@ export class App extends React.PureComponent<{}, IAppState> {
     const keyCode = e.which;
     if (keyCode === KeyCodes.ENTER && !this.state.showMelodyLengthWarning) {
       this.handleButtonClick();
+    } else if (keyCode === KeyCodes.LETTER_V && (e.ctrlKey || e.metaKey)) {
+      // No-op. Allow pasting via the Cmd/Ctrl + V keyboard shortcut.
     } else {
       const isPitchBaseName = keyCode >= KeyCodes.LETTER_A && keyCode <= KeyCodes.LETTER_G;
       const isSharpSymbolKey = keyCode === KeyCodes.DIGIT_3;
@@ -131,11 +134,12 @@ export class App extends React.PureComponent<{}, IAppState> {
       if (i > 0 && isPitchName(char)) {
         result.push(" ");
       }
-      if (char != " ") {
+      // Allow one space at the end.
+      if (char != " " || i === melodyInput.length - 1) {
         result.push(char);
       }
     }
-    return result.join("").trim();
+    return result.join("");
   };
 
   private maybeRenderResults() {
