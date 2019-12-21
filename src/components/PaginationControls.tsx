@@ -1,4 +1,4 @@
-import { ButtonGroup, Button } from "@blueprintjs/core";
+import { ButtonGroup, Button, NumericInput } from "@blueprintjs/core";
 import classNames from "classnames";
 import * as React from "react";
 import { pageGetResultStartIndex, pageGetResultEndIndex } from "../util/pagingUtils";
@@ -19,8 +19,10 @@ export class PaginationControls extends React.PureComponent<IPaginationControlsP
   public render() {
     const { numResults, pageIndex, pageSize, withBottomMargin } = this.props;
 
+    const numPages = this.getNumPages();
+
     const isPrevDisabled = pageIndex === 0;
-    const isNextDisabled = pageIndex === this.getNumPages() - 1;
+    const isNextDisabled = pageIndex === numPages - 1;
 
     const resultsStartIndex = pageGetResultStartIndex(pageIndex, pageSize);
     const resultsEndIndexExclusive = pageGetResultEndIndex(pageIndex, pageSize, numResults);
@@ -31,6 +33,19 @@ export class PaginationControls extends React.PureComponent<IPaginationControlsP
           <ButtonGroup>
             <Button disabled={isPrevDisabled} icon="chevron-backward" onClick={this.handleStartButtonClick} />
             <Button disabled={isPrevDisabled} onClick={this.handlePrevButtonClick}>Prev</Button>
+          </ButtonGroup>
+          <NumericInput
+            buttonPosition="none"
+            className="hz-pagination-controls-stepper"
+            fill={true}
+            min={1}
+            max={numPages}
+            minorStepSize={null}
+            onValueChange={this.handleNumericInputChange}
+            // 1-indexed for display
+            value={this.props.pageIndex + 1}
+          />
+          <ButtonGroup>
             <Button disabled={isNextDisabled} onClick={this.handleNextButtonClick}>Next</Button>
             <Button disabled={isNextDisabled} icon="chevron-forward" onClick={this.handleEndButtonClick} />
           </ButtonGroup>
@@ -54,6 +69,11 @@ export class PaginationControls extends React.PureComponent<IPaginationControlsP
   private handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     this.props.onPageSizeChange(+e.target.value);
   }
+
+  private handleNumericInputChange = (value: number) => {
+    // The value will be 1-indexed, but the parent expects it to be 0-indexed.
+    this.props.onPageChange(value - 1);
+  };
 
   private renderPageSizeSelector() {
     return (
