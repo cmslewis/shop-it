@@ -49,7 +49,7 @@ export class ResultsPane extends React.PureComponent<IResultsPaneProps, IResults
 
     return (
       <Card>
-        <p><strong>Here {isAre} {formatInteger(results.length)} {ways} to harmonize this melody.</strong></p>
+        <p><strong>Here {isAre} {formatInteger(results.length)} {ways} to harmonize this melody. You can play them on <a href="http://cmslewis.github.io/keyano/" target="_blank">Keyano</a>.</strong></p>
         {this.renderPaginationControls()}
         <div className="hz-chord-results">
           {pageResultItems}
