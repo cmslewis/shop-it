@@ -9,6 +9,11 @@ export interface IChord {
     name: string; // e.g. Gm7
 }
 
+export type MelodyNote = Pitch | {
+    pitch: Pitch;
+    chord?: IChord;
+}
+
 export const Chord: Record<ChordName, IChord> = {
     C: {
         pitches: ["C", "E", "G"],
@@ -128,32 +133,39 @@ function buildMaps(rules: IChordProgressionBigram[]) {
 
 buildMaps(rules);
 
-export function harmonize(pitches: Pitch[]): IChord[][] {
+export function harmonize(melodyNotes: MelodyNote[]): IChord[][] {
     const result: IChord[][] = [];
-    harmonizeRec(pitches, [], result);
+    harmonizeRec(melodyNotes, [], result);
     return result.sort(chordListComparator);
 }
 
-function harmonizeRec(pitches: Pitch[], chordsSoFar: IChord[], out: IChord[][]): void {
-    if (pitches.length === 0) {
+function harmonizeRec(melodyNotes: MelodyNote[], chordsSoFar: IChord[], out: IChord[][]): void {
+    if (melodyNotes.length === 0) {
         return;
     }
 
-    const chordsWithPitch = getChordsContainingPitch(pitches[0]);
-    const chordsFromPrev = getChordsFollowingFinalChord(chordsSoFar);
-    const chordsToConsider = chordsSoFar.length === 0 ? chordsWithPitch : setIntersect(chordsWithPitch, chordsFromPrev);
+    const firstMelodyNote = melodyNotes[0];
+    const firstPitch = isMelodyNoteString(firstMelodyNote) ? firstMelodyNote : firstMelodyNote.pitch;
 
-    if (pitches.length === 1) {
+    const chordsWithPitch = getChordsContainingPitch(firstPitch);
+    const chordsFromPrev = getChordsFollowingFinalChord(chordsSoFar);
+
+    let chordsToConsider = chordsSoFar.length === 0 ? chordsWithPitch : setIntersect(chordsWithPitch, chordsFromPrev);
+    if (!isMelodyNoteString(firstMelodyNote) && firstMelodyNote.chord != null) {
+        chordsToConsider = setIntersect(chordsToConsider, new Set([firstMelodyNote.chord]));
+    }
+
+    if (melodyNotes.length === 1) {
         for (const c of chordsToConsider) {
             if (ValidLastChords.has(c)) {
                 out.push([...chordsSoFar, c]);
             }
         }
     } else {
-        const remainingPitches = pitches.slice(1);
+        const remainingMelodyNotes = melodyNotes.slice(1);
         for (const c of chordsToConsider) {
             if (chordsSoFar.length !== 0 || ValidFirstChords.has(c)) {
-                harmonizeRec(remainingPitches, [...chordsSoFar, c], out);
+                harmonizeRec(remainingMelodyNotes, [...chordsSoFar, c], out);
             }
         }
     }
@@ -195,4 +207,8 @@ function chordListComparator(a: IChord[], b: IChord[]) {
         }
     }
     return 0;
+}
+
+function isMelodyNoteString(melodyNote: MelodyNote): melodyNote is Pitch {
+    return typeof melodyNote === "string";
 }

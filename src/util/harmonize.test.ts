@@ -1,4 +1,4 @@
-import { harmonize, Chord, Pitch, IChord } from "./harmonize";
+import { harmonize, Chord, Pitch, IChord, MelodyNote } from "./harmonize";
 
 describe("harmonize", () => {
     it("returns [] if no pitches", () => {
@@ -10,7 +10,7 @@ describe("harmonize", () => {
     });
 
     it("returns 3 results for C", () => {
-        const pitches: Pitch[] = ["C"];
+        const pitches: MelodyNote[] = ["C"];
         runTest(pitches, [[Chord.Am7], [Chord.C]]);
     });
 
@@ -27,26 +27,26 @@ describe("harmonize", () => {
     });
 
     it("returns [CM, G7, CM] and [CM, G7, Am] for EDC", () => {
-        const pitches: Pitch[] = ["E", "D", "C", "D", "E", "E", "E", "D", "D", "D", "E", "G", "G"];
+        const pitches: MelodyNote[] = ["E", "D", "C", "D", "E", "E", "E", "D", "D", "D", "E", "G", "G"];
         const results = harmonize(pitches);
         console.log(`${results.length} results:\n${results.map(chords => `[${chords.map(c => c.name).join(",")}]`).join("\n")}`);
     });
 
     it("returns results for major scale (asc)", () => {
-        const pitches: Pitch[] = ["C", "D", "E", "F", "G", "A", "B", "C"];
+        const pitches: MelodyNote[] = ["C", "D", "E", "F", "G", "A", "B", "C"];
         const results = harmonize(pitches);
         printResult(pitches, results);
     });
 
     it.only("It Only Takes a Moment", () => {
-        const pitches: Pitch[] = ["A", "G", "C", "D", "A", "G", "C", "D", "A", "G", "A", "B", "C"];
+        const pitches: MelodyNote[] = ["A", "G", { pitch: "C", chord: Chord.C }, "C", "D", "A", "G", { pitch: "C", chord: Chord.C }, "C", "D", "A", "G", "G", "A", "B", "C"];
         const results = harmonize(pitches);
         printResult(pitches, results);
     });
 
 });
 
-function runTest(pitches: Pitch[], expected: IChord[][]) {
+function runTest(pitches: MelodyNote[], expected: IChord[][]) {
     const actual = harmonize(pitches);
     printResult(pitches, actual);
 
@@ -60,7 +60,8 @@ function toNames(chords: IChord[]) {
     return chords.map(c => c.name);
 }
 
-function printResult(pitches: Pitch[], result: IChord[][]) {
+function printResult(pitches: MelodyNote[], result: IChord[][]) {
+    const pitchesStr = pitches.map(p => typeof p === "string" ? p : p.chord != null ? `${p.pitch}(${p.chord.name})` : p.pitch).join(" ");
     const resultsString = result.map(chords => `  [${chords.map(c => c.name).join(",")}]`).join("\n");
-    console.log(`Melody:\n  ${pitches.join(" ")}\n\n${result.length} Harmonizations (sorted lexicographically):\n${resultsString}`);
+    console.log(`Melody:\n  ${pitchesStr}\n\n${result.length} Harmonizations (sorted lexicographically):\n${resultsString}`);
 }
