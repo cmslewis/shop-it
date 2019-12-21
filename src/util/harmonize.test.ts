@@ -1,6 +1,6 @@
 import { harmonize, Chord, Pitch, IChord, MelodyNote } from "./harmonize";
 
-describe("harmonize", () => {
+describe.skip("harmonize", () => {
     it("returns [] if no pitches", () => {
         runTest([], []);
     });
@@ -33,17 +33,22 @@ describe("harmonize", () => {
     });
 
     it("returns results for major scale (asc)", () => {
-        const pitches: MelodyNote[] = ["C", "D", "E", "F", "G", "A", "B", "C"];
+        const pitches: MelodyNote[] = [{ pitch: "C", chord: Chord.C }, "D", "E", "F", "G", "A", "B", { pitch: "C", chord: Chord.C }];
         const results = harmonize(pitches);
         printResult(pitches, results);
     });
 
-    it.only("It Only Takes a Moment", () => {
-        const pitches: MelodyNote[] = ["A", "G", { pitch: "C", chord: Chord.C }, "C", "D", "A", "G", { pitch: "C", chord: Chord.C }, "C", "D", "A", "G", "G", "A", "B", "C"];
+    it("It Only Takes a Moment", () => {
+        const pitches: MelodyNote[] = ["A", "G", { pitch: "C", chord: Chord.C }, "C", "D", "A", "G", { pitch: "C", chord: Chord.C }, "C", "D", "A", "G", "G", "A", "B", "C", "C#", "C#", "C#", "C#", { pitch: "D", chord: Chord.Dm7 }];
         const results = harmonize(pitches);
         printResult(pitches, results);
     });
 
+    it("chromatic scale", () => {
+        const pitches: MelodyNote[] = ["C", "C#", "D", "D#", "E", "F", "F#", "G"];
+        const results = harmonize(pitches);
+        printResult(pitches, results);
+    });
 });
 
 function runTest(pitches: MelodyNote[], expected: IChord[][]) {

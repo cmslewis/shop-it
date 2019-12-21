@@ -1,6 +1,6 @@
 
 export type Pitch = "C" | "C#" | "D" | "D#" | "E" | "F" | "F#" | "G" | "G#" | "Ab" | "A" | "A#" | "Bb" | "B" | "C";
-export type ChordName = "C" | "C7" | "Dm7" | "D7" | "Em7" | "E" | "F7" | "G7" | "A7" | "Am7" | "Bb7" | "B7";
+export type ChordName = "C" | "C7" | "Csharp7" | "Dm7" | "D7" | "Dsharp7" | "Em7" | "E7" | "F7" | "Fsharp7" | "G7" | "Gsharp7" | "A7" | "Am7" | "Asharp7" | "Bb7" | "B7";
 
 type IChordProgressionBigram = [IChord, IChord];
 
@@ -23,6 +23,10 @@ export const Chord: Record<ChordName, IChord> = {
         pitches: ["C", "E", "G", "Bb"],
         name: "C7",
     },
+    Csharp7: {
+        pitches: ["C#", "F" /* E#. TODO: Enharmonic spelling. */, "G#", "B"],
+        name: "Csharp7",
+    },
     Dm7: {
         pitches: ["D", "F", "A", "C"],
         name: "Dm7",
@@ -31,29 +35,45 @@ export const Chord: Record<ChordName, IChord> = {
         pitches: ["D", "F#", "A", "C"],
         name: "D7",
     },
+    Dsharp7: {
+        pitches: ["D#", "G" /* F## */, "A#", "C#"],
+        name: "Dsharp7",
+    },
     Em7: {
         pitches: ["E", "G", "B", "D"],
         name: "Em7",
     },
-    E: {
-        pitches: ["E", "G#", "B"],
-        name: "E",
+    E7: {
+        pitches: ["E", "G#", "B", "D"],
+        name: "E7",
     },
     F7: {
         pitches: ["F", "A", "C", "Bb"],
         name: "F7",
     },
+    Fsharp7: {
+        pitches: ["F#", "A#", "C#", "E"],
+        name: "F#7",
+    },
     G7: {
         pitches: ["G", "B", "D", "F"],
         name: "G7",
+    },
+    Gsharp7: {
+        pitches: ["G#", "C" /* B# */, "D#", "F#"],
+        name: "G#7",
+    },
+    Am7: {
+        pitches: ["A", "C", "E", "G"],
+        name: "Am7",
     },
     A7: {
         pitches: ["A", "C#", "E", "G"],
         name: "A7",
     },
-    Am7: {
-        pitches: ["A", "C", "E", "G"],
-        name: "Am7",
+    Asharp7: {
+        pitches: ["A#", "D" /* C## */, "F" /** E# */, "G#"],
+        name: "A#7",
     },
     Bb7: {
         pitches: ["Bb", "D", "F", "Ab"],
@@ -66,47 +86,110 @@ export const Chord: Record<ChordName, IChord> = {
 };
 
 const rules: IChordProgressionBigram[] = [
+    // Root departures.
+    [Chord.C, Chord.C7],
     [Chord.C, Chord.Dm7],
     [Chord.C, Chord.D7],
     [Chord.C, Chord.Em7],
-    [Chord.C, Chord.E],
+    [Chord.C, Chord.E7],
     [Chord.C, Chord.F7],
+    [Chord.C, Chord.Fsharp7],
     [Chord.C, Chord.G7],
     [Chord.C, Chord.Am7],
     [Chord.C, Chord.A7],
     [Chord.C, Chord.Bb7],
     [Chord.C, Chord.B7],
-    [Chord.C, Chord.C7],
 
+    // Circle-of-fifth motions.
+    //   (V7 -> V7)
     [Chord.C7, Chord.F7],
-
-    [Chord.Dm7, Chord.G7],
+    [Chord.F7, Chord.Bb7],
+    [Chord.Bb7, Chord.Asharp7], // HACKHACK: Handle enharmonically identical chords.
+    [Chord.Asharp7, Chord.Bb7],
+    [Chord.Asharp7, Chord.Dsharp7],
+    [Chord.Dsharp7, Chord.Gsharp7],
+    [Chord.Gsharp7, Chord.Csharp7],
+    [Chord.Csharp7, Chord.Fsharp7],
+    [Chord.Fsharp7, Chord.B7],
+    [Chord.B7, Chord.E7],
+    [Chord.E7, Chord.A7],
+    [Chord.A7, Chord.D7],
     [Chord.D7, Chord.G7],
+    [Chord.G7, Chord.C],
+    [Chord.G7, Chord.C7],
 
-    [Chord.Em7, Chord.Am7],
+    //   (v7 -> V7)
+    [Chord.Am7, Chord.D7],
+    [Chord.Dm7, Chord.G7],
     [Chord.Em7, Chord.A7],
 
-    [Chord.F7, Chord.Bb7],
-    [Chord.F7, Chord.C7],
+    //   (v7 -> v7)
+    [Chord.Em7, Chord.Am7],
 
+    //   (V7 -> v7)
+    [Chord.A7, Chord.Dm7],
+
+    // Half-step motions.
+    // (maybe uncomment some of these)
+    // vvv
+    // [Chord.C7, Chord.Csharp7],
+    // [Chord.Csharp7, Chord.D7],
+    // [Chord.D7, Chord.Dsharp7],
+    // [Chord.Dsharp7, Chord.E7],
+    // [Chord.E7, Chord.F7],
+    // [Chord.F7, Chord.Fsharp7],
+    // [Chord.Fsharp7, Chord.G7],
+    // [Chord.G7, Chord.Gsharp7],
+    // [Chord.Gsharp7, Chord.A7],
+    // [Chord.A7, Chord.Asharp7],
+    // [Chord.A7, Chord.Bb7], // HACKHACK: Enharmonic equivalent
+    // ^^^
+    [Chord.Dsharp7, Chord.Dm7],
+    [Chord.F7, Chord.Fsharp7],
+    [Chord.Fsharp7, Chord.F7],
+    [Chord.Fsharp7, Chord.G7],
+    [Chord.Bb7, Chord.B7],
+    [Chord.B7, Chord.C],
+    [Chord.B7, Chord.C7],
+
+    // Whole-step motions.
+    [Chord.Bb7, Chord.C],
+    [Chord.Bb7, Chord.C7],
+    [Chord.D7, Chord.C],
+    [Chord.D7, Chord.C7],
+
+    // Deceptive cadences.
     [Chord.G7, Chord.Am7],
-    [Chord.G7, Chord.C],
+
+    // Minor-third motions.
+    [Chord.Am7, Chord.C],
+    [Chord.Am7, Chord.C7],
+
+    // Major-third motions.
     [Chord.G7, Chord.B7],
 
-    [Chord.Am7, Chord.D7],
-    [Chord.Am7, Chord.C],
-    [Chord.A7, Chord.D7],
+    // Tritone substitutions.
+    [Chord.Csharp7, Chord.G7],
+    [Chord.D7, Chord.Gsharp7],
+    [Chord.Dsharp7, Chord.A7],
+    [Chord.E7, Chord.Asharp7],
+    [Chord.E7, Chord.Bb7], // HACKHACK: Enharmonic equivalent
+    [Chord.F7, Chord.B7],
+    [Chord.Fsharp7, Chord.C],
+    [Chord.Fsharp7, Chord.C7],
+    [Chord.G7, Chord.Csharp7],
+    [Chord.Gsharp7, Chord.D7],
+    [Chord.A7, Chord.Dsharp7],
+    [Chord.Asharp7, Chord.E7],
+    [Chord.Bb7, Chord.E7], // HACKHACK: Enharmonic equivalent
+    [Chord.B7, Chord.F7],
+    [Chord.C7, Chord.Fsharp7],
 
-    [Chord.Bb7, Chord.C7],
-    [Chord.Bb7, Chord.C],
-    [Chord.Bb7, Chord.B7],
-
-    [Chord.B7, Chord.C7],
-    [Chord.B7, Chord.C],
+    // Other motions.
+    [Chord.F7, Chord.C7],
 ];
 
 const ValidFirstChords = new Set<IChord>([Chord.C, Chord.Am7]);
-const ValidLastChords = new Set<IChord>([Chord.C, Chord.G7]);
 
 let p2c: Map<string, Set<IChord>>;
 let c2c: Map<string, Set<IChord>>;
@@ -157,9 +240,7 @@ function harmonizeRec(melodyNotes: MelodyNote[], chordsSoFar: IChord[], out: ICh
 
     if (melodyNotes.length === 1) {
         for (const c of chordsToConsider) {
-            if (ValidLastChords.has(c)) {
-                out.push([...chordsSoFar, c]);
-            }
+            out.push([...chordsSoFar, c]);
         }
     } else {
         const remainingMelodyNotes = melodyNotes.slice(1);
