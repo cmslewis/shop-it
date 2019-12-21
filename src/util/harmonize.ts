@@ -85,8 +85,12 @@ export const Chord: Record<ChordName, IChord> = {
     },
 };
 
-const rules: IChordProgressionBigram[] = [
-    // Root departures.
+type RulesList = IChordProgressionBigram[];
+
+/**
+ * Assuming C Major, you can go pretty much anywhere from a C major chord.
+ */
+const RootDeparturesRules: RulesList = [
     [Chord.C, Chord.C7],
     [Chord.C, Chord.Dm7],
     [Chord.C, Chord.D7],
@@ -99,8 +103,13 @@ const rules: IChordProgressionBigram[] = [
     [Chord.C, Chord.A7],
     [Chord.C, Chord.Bb7],
     [Chord.C, Chord.B7],
+];
 
-    // Circle-of-fifth motions.
+/**
+ * Follow the circle of fifths. Secondary dominants always resolve to their
+ * corresponding root. Allow for both Mm7 (dominant 7) and m7 variants.
+*/
+const CircleOfFifthsRules: RulesList = [
     //   (V7 -> V7)
     [Chord.C7, Chord.F7],
     [Chord.F7, Chord.Bb7],
@@ -128,22 +137,13 @@ const rules: IChordProgressionBigram[] = [
 
     //   (V7 -> v7)
     [Chord.A7, Chord.Dm7],
+];
 
-    // Half-step motions.
-    // (maybe uncomment some of these)
-    // vvv
-    // [Chord.C7, Chord.Csharp7],
-    // [Chord.Csharp7, Chord.D7],
-    // [Chord.D7, Chord.Dsharp7],
-    // [Chord.Dsharp7, Chord.E7],
-    // [Chord.E7, Chord.F7],
-    // [Chord.F7, Chord.Fsharp7],
-    // [Chord.Fsharp7, Chord.G7],
-    // [Chord.G7, Chord.Gsharp7],
-    // [Chord.Gsharp7, Chord.A7],
-    // [Chord.A7, Chord.Asharp7],
-    // [Chord.A7, Chord.Bb7], // HACKHACK: Enharmonic equivalent
-    // ^^^
+/**
+ * Rise and fall by a half step to handle tricky half-step motion in the melody.
+*/
+const HalfStepStrictRules: RulesList = [
+    [Chord.Dsharp7, Chord.D7],
     [Chord.Dsharp7, Chord.Dm7],
     [Chord.F7, Chord.Fsharp7],
     [Chord.Fsharp7, Chord.F7],
@@ -151,24 +151,54 @@ const rules: IChordProgressionBigram[] = [
     [Chord.Bb7, Chord.B7],
     [Chord.B7, Chord.C],
     [Chord.B7, Chord.C7],
+];
 
-    // Whole-step motions.
+/**
+ * Half-step motions that should only be used in a pinch. Enabling all of these
+ * may pollute the results too much, so they're disabled by default.
+*/
+const HalfStepLooseRules: RulesList = [
+    [Chord.C7, Chord.Csharp7],
+    [Chord.Csharp7, Chord.D7],
+    [Chord.D7, Chord.Dsharp7],
+    [Chord.Dsharp7, Chord.E7],
+    [Chord.E7, Chord.F7],
+    [Chord.F7, Chord.Fsharp7],
+    [Chord.Fsharp7, Chord.G7],
+    [Chord.G7, Chord.Gsharp7],
+    [Chord.Gsharp7, Chord.A7],
+    [Chord.A7, Chord.Asharp7],
+    [Chord.A7, Chord.Bb7], // HACKHACK: Enharmonic equivalent
+];
+
+/**
+ * Whole step motions. These are particularly useful to and from the tonic.
+*/
+const WholeStepRules: RulesList = [
+    [Chord.C, Chord.D7],
     [Chord.Bb7, Chord.C],
     [Chord.Bb7, Chord.C7],
     [Chord.D7, Chord.C],
     [Chord.D7, Chord.C7],
+    // This is also seen on occasion, but is omitted for now to reduce noise:
+    // [Chord.F7, Chord.G7],
+];
 
-    // Deceptive cadences.
+const DeceptiveCadenceRules: RulesList = [
     [Chord.G7, Chord.Am7],
+];
 
-    // Minor-third motions.
+const MinorThirdRules: RulesList = [
     [Chord.Am7, Chord.C],
     [Chord.Am7, Chord.C7],
+];
 
-    // Major-third motions.
+const MajorThirdRules: RulesList = [
     [Chord.G7, Chord.B7],
+];
 
-    // Tritone substitutions.
+const TritoneSubstitutionRules: RulesList = [
+    [Chord.C7, Chord.Fsharp7],
     [Chord.Csharp7, Chord.G7],
     [Chord.D7, Chord.Gsharp7],
     [Chord.Dsharp7, Chord.A7],
@@ -183,10 +213,23 @@ const rules: IChordProgressionBigram[] = [
     [Chord.Asharp7, Chord.E7],
     [Chord.Bb7, Chord.E7], // HACKHACK: Enharmonic equivalent
     [Chord.B7, Chord.F7],
-    [Chord.C7, Chord.Fsharp7],
+];
 
-    // Other motions.
+const PerfectFourthRules: RulesList = [
     [Chord.F7, Chord.C7],
+];
+
+const rules: IChordProgressionBigram[] = [
+    ...RootDeparturesRules,
+    ...CircleOfFifthsRules,
+    ...DeceptiveCadenceRules,
+    ...HalfStepStrictRules,
+    // ...HalfStepLooseRules, // Disabled by default;
+    ...WholeStepRules,
+    ...MinorThirdRules,
+    ...MajorThirdRules,
+    ...PerfectFourthRules,
+    ...TritoneSubstitutionRules,
 ];
 
 const ValidFirstChords = new Set<IChord>([Chord.C, Chord.Am7]);
