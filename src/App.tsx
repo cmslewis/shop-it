@@ -1,7 +1,9 @@
 import React from "react";
 import { InputGroup, FormGroup, ControlGroup, Button, Intent, Classes, ButtonGroup, Card } from "@blueprintjs/core";
 import "./App.scss";
+import { PaginationControls } from "./components/PaginationControls";
 import { Pitch, IChord, harmonize } from "./util/harmonize";
+import { pageGetResultStartIndex, pageGetResultEndIndex } from "./util/pagingUtils";
 
 const DEFAULT_PAGE_SIZE = 50;
 const ENTER_KEY = 13;
@@ -75,28 +77,25 @@ export class App extends React.PureComponent {
 
   private maybeRenderResults() {
     const { pageIndex, pageSize, results } = this.state;
+
     if (results === undefined) {
       return undefined;
     }
 
-    const pageStartIndex = pageIndex * pageSize;
-    const pageEndIndexExclusive = Math.min(results.length, pageStartIndex + pageSize);
+    const pageStart = pageGetResultStartIndex(pageIndex, pageSize);
+    const pageEndExclusive = pageGetResultEndIndex(pageIndex, pageSize, results.length);
 
-    const firstFewResults = results.slice(pageStartIndex, pageEndIndexExclusive);
-    const resultItems = firstFewResults.map(this.renderResultItem);
+    const pageResultItems = results.slice(pageStart, pageEndExclusive).map(this.renderResultItem);
 
-    const isAre = resultItems.length === 1 ? "is" : "are";
-    const ways = resultItems.length === 1 ? "way" : "ways";
+    const isAre = pageResultItems.length === 1 ? "is" : "are";
+    const ways = pageResultItems.length === 1 ? "way" : "ways";
 
     return (
       <Card>
         <p><strong>Here {isAre} {results.length} {ways} to harmonize this melody.</strong></p>
-        <div className="hz-results-bounds-text">
-          {/* 1-indexed */}
-          Showing {pageStartIndex + 1} through {pageEndIndexExclusive} <em>(sorted lexicographically)</em>
-        </div>
-        {this.renderPaginationControls(results)}
-        {resultItems}
+        {this.renderPaginationControls()}
+        {pageResultItems}
+        {this.renderPaginationControls()}
       </Card>
     );
   }
@@ -116,24 +115,24 @@ export class App extends React.PureComponent {
     return <div className="hz-chord-result" key={resultStr}>{elements}</div>;
   }
 
-  private renderPaginationControls(allResults: IChord[][]) {
-    const { pageIndex, pageSize } = this.state;
-    const numPages = Math.ceil(allResults.length / pageSize);
+  private renderPaginationControls() {
+    const { pageIndex, pageSize, results } = this.state;
+
+    if (results === undefined) {
+      return undefined;
+    }
+
     return (
-      <div className="hz-pagination-controls">
-        <ButtonGroup>
-          <Button disabled={pageIndex === 0} intent={Intent.PRIMARY} onClick={this.handlePrevButtonClick}>Prev</Button>
-          <Button disabled={pageIndex === numPages - 1} intent={Intent.PRIMARY} onClick={this.handleNextButtonClick}>Next</Button>
-        </ButtonGroup>
-      </div>
+      <PaginationControls
+        numResults={results.length}
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        onPageChange={this.handlePageChange}
+        onPageSizeChange={this.handlePageSizeChange}
+      />
     );
   }
 
-  private handlePrevButtonClick = () => {
-    this.setState({ pageIndex: this.state.pageIndex - 1 });
-  };
-
-  private handleNextButtonClick = () => {
-    this.setState({ pageIndex: this.state.pageIndex + 1 });
-  };
+  private handlePageChange = (pageIndex: number) => this.setState({ pageIndex });
+  private handlePageSizeChange = (pageSize: number) => this.setState({ pageSize });
 }

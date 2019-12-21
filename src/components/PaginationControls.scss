@@ -1,0 +1,39 @@
+@import "~@blueprintjs/core/lib/scss/variables";
+
+.hz-pagination-controls {
+  display: flex;
+  // justify-content: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.hz-pagination-controls-text {
+  margin: 0 10px;
+
+  em {
+      color: $pt-text-color-muted;
+  }
+}
+
+.hz-pagination-controls-left {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+}
+
+.hz-pagination-controls-right {
+  flex: 0 0 auto;
+}
+
+.hz-pagination-controls-page-size {
+  display: flex;
+  align-items: center;
+}
+
+.hz-pagination-controls-page-size-text {
+  line-height: 30px;
+}
+
+.hz-pagination-controls-page-size-selector {
+  margin-left: 5px;
+}
