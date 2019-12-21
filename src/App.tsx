@@ -1,5 +1,5 @@
 import React from "react";
-import { InputGroup, FormGroup, ControlGroup, Button, Intent, Classes, Position, Menu, MenuItem, Popover } from "@blueprintjs/core";
+import { InputGroup, FormGroup, ControlGroup, Button, Intent, Classes, Position, Menu, MenuItem, Popover, IconName, Icon } from "@blueprintjs/core";
 import "./App.scss";
 import { ResultsPane } from "./components/ResultsPane";
 import { Pitch, IChord, harmonize } from "./harmonization/harmonize";
@@ -83,6 +83,10 @@ export class App extends React.PureComponent<{}, IAppState> {
     const CIRCLE_TEXT = "Circle of fifths only";
     const ALL_TEXT = "All progressions";
 
+    const CIRCLE_ICON: IconName = "refresh";
+    const ALL_ICON: IconName = "layout";
+
+    const buttonIcon = circleOfFifthsOnly ? "refresh" : ALL_ICON;
     const buttonText = circleOfFifthsOnly ? CIRCLE_TEXT : ALL_TEXT;
 
     return (
@@ -92,14 +96,14 @@ export class App extends React.PureComponent<{}, IAppState> {
             <MenuItem
               active={circleOfFifthsOnly}
               className="hz-flag-menu-item"
-              icon="refresh"
+              icon={CIRCLE_ICON}
               onClick={this.circleOfFifthsFlagEnable}
               text={this.renderHarmonizationOptionsMenuText(CIRCLE_TEXT, "Only strict V7 → I progressions will be used. v7 will also be permitted.")}
             />
             <MenuItem
               active={!circleOfFifthsOnly}
               className="hz-flag-menu-item"
-              icon="layout"
+              icon={ALL_ICON}
               onClick={this.circleOfFifthsFlagDisable}
               text={this.renderHarmonizationOptionsMenuText(ALL_TEXT, "Other progressions may also be used (e.g. half-step motion, tritone substitutions).")}
             />
@@ -107,7 +111,7 @@ export class App extends React.PureComponent<{}, IAppState> {
         }
         position={Position.BOTTOM_RIGHT}
       >
-        <Button minimal={true} rightIcon="caret-down">
+        <Button icon={<Icon icon={buttonIcon} iconSize={12} />} minimal={true} rightIcon="caret-down">
           {buttonText}
         </Button>
       </Popover>
