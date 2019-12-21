@@ -12,6 +12,21 @@ body {
 
 .hz-chord-result {
   display: flex;
+  align-items: baseline;
+
+  &:nth-child(2n) {
+    background: $light-gray5;
+  }
+}
+
+.hz-chord-result-id {
+  width: 60px;
+  border-right: 1px solid $light-gray2;
+  padding: 0 5px;
+  font-family: monospace;
+  font-size: $pt-font-size-small;
+  color: $gray3;
+  text-align: right;
 }
 
 .hz-chord-name {

@@ -100,7 +100,11 @@ export class App extends React.PureComponent {
     );
   }
 
-  private renderResultItem = (result: IChord[], _index: number) => {
+  private renderResultItem = (result: IChord[], index: number) => {
+    const { pageIndex, pageSize } = this.state;
+
+    const resultAbsoluteIndex = pageGetResultStartIndex(pageIndex, pageSize) + index;
+
     const resultStr = result.map(c => c.name).join(" ");
     const chordNames = result.map((c, i) => <span key={i} className="hz-chord-name">{c.name}</span>);
 
@@ -112,7 +116,13 @@ export class App extends React.PureComponent {
       elements.push(chordNames[i]);
     }
 
-    return <div className="hz-chord-result" key={resultStr}>{elements}</div>;
+    return (
+      <div className="hz-chord-result" key={resultStr}>
+        {/* 1-indexed */}
+        <div className="hz-chord-result-id">#{resultAbsoluteIndex + 1}</div>
+        {elements}
+      </div>
+    );
   }
 
   private renderPaginationControls(withBottomMargin = true) {
