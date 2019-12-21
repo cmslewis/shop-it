@@ -6,6 +6,7 @@ import { Pitch, IChord, harmonize } from "./harmonization/harmonize";
 
 const KeyCodes = {
   BACKSPACE: 8,
+  TAB: 9,
   ENTER: 13,
   SPACE: 32,
   ARROW_LEFT: 37,
@@ -142,9 +143,9 @@ export class App extends React.PureComponent<{}, IAppState> {
     const keyCode = e.which;
     if (keyCode === KeyCodes.ENTER && !this.state.showMelodyLengthWarning) {
       this.handleButtonClick();
-    } else if (keyCode === KeyCodes.LETTER_V && (e.ctrlKey || e.metaKey)) {
-      // No-op. Allow pasting via the Cmd/Ctrl + V keyboard shortcut.
     } else {
+      const isPasteHotkey = keyCode === KeyCodes.LETTER_V && (e.ctrlKey || e.metaKey);
+      const isTab = keyCode === KeyCodes.TAB;
       const isPitchBaseName = keyCode >= KeyCodes.LETTER_A && keyCode <= KeyCodes.LETTER_G;
       const isSharpSymbolKey = keyCode === KeyCodes.DIGIT_3;
       const isFlatSymbolKey = keyCode === KeyCodes.LETTER_B;
@@ -154,6 +155,8 @@ export class App extends React.PureComponent<{}, IAppState> {
       const isDelete = keyCode === KeyCodes.DELETE;
 
       if (
+        !isPasteHotkey &&
+        !isTab &&
         !isPitchBaseName &&
         !isSharpSymbolKey &&
         !isFlatSymbolKey &&
