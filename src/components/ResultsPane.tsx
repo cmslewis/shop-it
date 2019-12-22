@@ -33,7 +33,7 @@ export class ResultsPane extends React.PureComponent<IResultsPaneProps, IResults
             <strong>No harmonizations found!</strong>
           </p>
           <p>
-            This doesn't mean there's no way to harmonize this line&mdash;it just means that no progression was found that relies solely on the limited rules this system defines.
+            This doesn't mean there's no way to harmonize this line&mdash;it just means that no progression was found using the limited rules defined in this app.
           </p>
         </Card>
       )
@@ -49,7 +49,7 @@ export class ResultsPane extends React.PureComponent<IResultsPaneProps, IResults
 
     return (
       <Card>
-        <p><strong>Here {isAre} {formatInteger(results.length)} {ways} to harmonize this melody. You can play them on <a href="http://cmslewis.github.io/keyano/" target="_blank">Keyano</a>.</strong></p>
+        <p><strong>Here {isAre} {formatInteger(results.length)} {ways} to harmonize this melody.</strong></p>
         {this.renderPaginationControls()}
         <div className="hz-chord-results">
           {pageResultItems}

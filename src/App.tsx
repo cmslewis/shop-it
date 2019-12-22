@@ -16,7 +16,6 @@ const PITCH_INPUT_REGEX = /^([A-Ga-g][#b]?)(\(([A-Ga-g][#b]?(m7|7)?)\))?$/; // E
 interface IAppState {
   circleOfFifthsOnly: boolean;
   melodyInput: string;
-  melodyNotes: Pitch[];
   results: IChord[][] | undefined;
   showMelodyLengthWarning: boolean;
 }
@@ -25,7 +24,6 @@ export class App extends React.PureComponent<{}, IAppState> {
   public state: IAppState = {
     circleOfFifthsOnly: true,
     melodyInput: "",
-    melodyNotes: [],
     results: undefined,
     showMelodyLengthWarning: false,
   };
@@ -33,7 +31,7 @@ export class App extends React.PureComponent<{}, IAppState> {
   public render() {
     const { showMelodyLengthWarning } = this.state;
     const helperText = showMelodyLengthWarning
-      ? "Melodies can't be longer than 15 notes—otherwise your browser may freeze."
+      ? "Melodies can't be longer than 15 notes."
       : "Valid pitches are C, C#, D, D#, E, F, F#, G, G#, A, A#, Bb, B, and C. Valid chords are C, C7, C#7, Dm7, D7, D#7, Em7, E7, F7, F#7, G7, G#7, Am7, A7, A#7, Bb7, B7.";
     return (
       <div className="hz-app">
@@ -44,9 +42,10 @@ export class App extends React.PureComponent<{}, IAppState> {
         <h3>Examples</h3>
         <p>
           <ul>
-            {this.renderExampleListItem("Down Our Way", "E B A G A E D")}
-            {this.renderExampleListItem("Mary Had a Little Lamb", "E D C D E E E")}
-            {this.renderExampleListItem("Chromatic scale", "C C# D D# E F F# G")}
+            {this.renderExampleListItem("Down Our Way", "E B A G A E D", false)}
+            {this.renderExampleListItem("Mary Had a Little Lamb", "E D C D E E E", false)}
+            {this.renderExampleListItem("Chromatic scale", "C C# D D# E F F# G", true)}
+            {this.renderExampleListItem("Santa Fe", "G(G7) F E(C) G F E(Am7)", true)}
           </ul>
         </p>
         <h3>Notes</h3>
@@ -54,6 +53,8 @@ export class App extends React.PureComponent<{}, IAppState> {
           <li><strong>Forced chords.</strong> You can force a particular chord for a particular melody note. Just put the chord name in parentheses after the pitch: <code>F#(D7)</code>. Make sure the forced chord actually contains the pitch&mdash;you won't see any validation messages or error messages if not.</li>
           <li><strong>Progression permissivity.</strong> You can decide whether to allow only basic Circle of Fifths motion (e.g. II7 → V7 → I) or additional progressions as well (e.g. I#7 → I7, tritone substitution). Permitting all progressions will give many more results.</li>
           <li><strong>Melody length.</strong> For performance reasons, melodies can be at most 15 pitches long. Computating anything longer would likely cook your browser.</li>
+          <li><strong>Letter casing.</strong> Case matters only for chord names (e.g. because AM7 and Am7 are distinct chords). Case does not matter for pitch names.</li>
+          <li><strong>Playing chords.</strong> You can play through progressions using <a href="http://cmslewis.github.io/keyano/" target="_blank">Keyano</a>, a browser-based piano, if you want.</li>
         </ul>
         <FormGroup
           helperText={helperText}
@@ -71,7 +72,7 @@ export class App extends React.PureComponent<{}, IAppState> {
             />
             <Button
               className={Classes.FIXED}
-              disabled={showMelodyLengthWarning}
+              disabled={showMelodyLengthWarning || this.state.melodyInput.length === 0}
               intent={showMelodyLengthWarning ? Intent.WARNING : Intent.PRIMARY}
               icon="music"
               large={true}
@@ -87,12 +88,16 @@ export class App extends React.PureComponent<{}, IAppState> {
     );
   }
 
-  private renderExampleListItem(title: string, melodyInput: string) {
+  private renderExampleListItem(title: string, melodyInput: string, needsAllProgressions: boolean) {
+    const onClick = () => {
+      this.changeMelodyInput(melodyInput);
+      this.setState({ circleOfFifthsOnly: !needsAllProgressions });
+    };
     return (
       <li>
         <strong>{title}:</strong>{" "}
         <code>{melodyInput}</code>{" "}
-        <a onClick={() => this.changeMelodyInput(melodyInput)}>(Try it)</a>
+        <a onClick={onClick}>(Try it)</a>
       </li >
     );
   }
@@ -168,7 +173,7 @@ export class App extends React.PureComponent<{}, IAppState> {
 
   private handleMelodyInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const keyCode = e.which;
-    if (keyCode === KeyCodes.ENTER && !this.state.showMelodyLengthWarning) {
+    if (keyCode === KeyCodes.ENTER && !this.state.showMelodyLengthWarning && this.state.melodyInput.length > 0) {
       this.handleButtonClick();
     }
   };
