@@ -6,26 +6,12 @@ import { Pitch, IChord, harmonize, MelodyNote } from "./harmonization/harmonize"
 import { Chord } from "./harmonization/harmonize";
 
 const KeyCodes = {
-  BACKSPACE: 8,
-  TAB: 9,
   ENTER: 13,
-  SPACE: 32,
-  ARROW_LEFT: 37,
-  ARROW_DOWN: 40,
-  DELETE: 46,
-  DIGIT_0: 48,
-  DIGIT_3: 51,
-  DIGIT_7: 55,
-  DIGIT_9: 57,
-  LETTER_A: 65,
-  LETTER_B: 66,
-  LETTER_G: 71,
-  LETTER_V: 86,
 };
 
 const DEFAULT_MELODY: Pitch[] = ["E", "D", "C", "D", "E"];
 const MAX_MELODY_LENGTH = 15;
-const PITCH_INPUT_REGEX = /^([A-G][#b]?)(\(([A-G][#b]?(m7|7)?)\))?$/; // E, F#, C(C), C(Am7)
+const PITCH_INPUT_REGEX = /^([A-Ga-g][#b]?)(\(([A-Ga-g][#b]?(m7|7)?)\))?$/; // E, F#, C(C), C(Am7)
 
 interface IAppState {
   circleOfFifthsOnly: boolean;
@@ -38,8 +24,8 @@ interface IAppState {
 export class App extends React.PureComponent<{}, IAppState> {
   public state: IAppState = {
     circleOfFifthsOnly: true,
-    melodyInput: DEFAULT_MELODY.join(" "),
-    melodyNotes: DEFAULT_MELODY,
+    melodyInput: "",
+    melodyNotes: [],
     results: undefined,
     showMelodyLengthWarning: false,
   };
@@ -48,21 +34,38 @@ export class App extends React.PureComponent<{}, IAppState> {
     const { showMelodyLengthWarning } = this.state;
     const helperText = showMelodyLengthWarning
       ? "Melodies can't be longer than 15 notes—otherwise your browser may freeze."
-      : "To force a particular chord for a particular note, put the chord name in parentheses after the pitch: F#(D7)."
+      : "Valid pitches are C, C#, D, D#, E, F, F#, G, G#, A, A#, Bb, B, and C. Valid chords are C, C7, C#7, Dm7, D7, D#7, Em7, E7, F7, F#7, G7, G#7, Am7, A7, A#7, Bb7, B7.";
     return (
       <div className="hz-app">
-        <h1>BBS Harmonizer</h1>
+        <h2>'Shop It: A Simple Barbershop Harmonizer</h2>
+        <p>
+          Enter a sequence of pitches in C Major, then click "Harmonize" to see various barbershop chord progressions for that melody.
+        </p>
+        <h3>Examples</h3>
+        <p>
+          <ul>
+            {this.renderExampleListItem("Down Our Way", "E B A G A E D")}
+            {this.renderExampleListItem("Mary Had a Little Lamb", "E D C D E E E")}
+            {this.renderExampleListItem("Chromatic scale", "C C# D D# E F F# G")}
+          </ul>
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><strong>Forced chords.</strong> You can force a particular chord for a particular melody note. Just put the chord name in parentheses after the pitch: <code>F#(D7)</code>. Make sure the forced chord actually contains the pitch&mdash;you won't see any validation messages or error messages if not.</li>
+          <li><strong>Progression permissivity.</strong> You can decide whether to allow only basic Circle of Fifths motion (e.g. II7 → V7 → I) or additional progressions as well (e.g. I#7 → I7, tritone substitution). Permitting all progressions will give many more results.</li>
+          <li><strong>Melody length.</strong> For performance reasons, melodies can be at most 15 pitches long. Computating anything longer would likely cook your browser.</li>
+        </ul>
         <FormGroup
-          label="Enter a melody in C major, then click 'Harmonize' to see suggested barbershop chord progressions."
           helperText={helperText}
           intent={showMelodyLengthWarning ? Intent.WARNING : Intent.NONE}
         >
           <ControlGroup fill={true}>
             <InputGroup
               intent={showMelodyLengthWarning ? Intent.WARNING : Intent.NONE}
+              large={true}
               onChange={this.handleMelodyInputChange}
               onKeyDown={this.handleMelodyInputKeyDown}
-              placeholder="Example: E D C D E E E D D D E C C"
+              placeholder="Enter a melody in C Major..."
               rightElement={this.renderSearchBarRightElement()}
               value={this.state.melodyInput}
             />
@@ -71,6 +74,7 @@ export class App extends React.PureComponent<{}, IAppState> {
               disabled={showMelodyLengthWarning}
               intent={showMelodyLengthWarning ? Intent.WARNING : Intent.PRIMARY}
               icon="music"
+              large={true}
               onClick={this.handleButtonClick}
             >
               Harmonize!
@@ -79,6 +83,16 @@ export class App extends React.PureComponent<{}, IAppState> {
         </FormGroup>
         {this.maybeRenderResults()}
       </div>
+    );
+  }
+
+  private renderExampleListItem(title: string, melodyInput: string) {
+    return (
+      <li>
+        <strong>{title}:</strong>{" "}
+        <code>{melodyInput}</code>{" "}
+        <a onClick={() => this.changeMelodyInput(melodyInput)}>(Try it)</a>
+      </li >
     );
   }
 
@@ -91,7 +105,6 @@ export class App extends React.PureComponent<{}, IAppState> {
     const CIRCLE_ICON: IconName = "refresh";
     const ALL_ICON: IconName = "layout";
 
-    const buttonIcon = circleOfFifthsOnly ? "refresh" : ALL_ICON;
     const buttonText = circleOfFifthsOnly ? CIRCLE_TEXT : ALL_TEXT;
 
     return (
@@ -116,7 +129,7 @@ export class App extends React.PureComponent<{}, IAppState> {
         }
         position={Position.BOTTOM_RIGHT}
       >
-        <Button icon={<Icon icon={buttonIcon} iconSize={12} />} minimal={true} rightIcon="caret-down">
+        <Button minimal={true} rightIcon="caret-down">
           {buttonText}
         </Button>
       </Popover>
@@ -142,44 +155,20 @@ export class App extends React.PureComponent<{}, IAppState> {
 
   private handleMelodyInputChange = (e: React.FormEvent<HTMLInputElement>) => {
     const melodyInput = this.getSanitizedMelodyInput((e.target as HTMLInputElement).value);
+    this.changeMelodyInput(melodyInput);
+  };
+
+  private changeMelodyInput(melodyInput: string) {
     this.setState({
       melodyInput,
       showMelodyLengthWarning: this.parseMelodyNotes(melodyInput).length > MAX_MELODY_LENGTH,
     });
-  };
+  }
 
   private handleMelodyInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const keyCode = e.which;
     if (keyCode === KeyCodes.ENTER && !this.state.showMelodyLengthWarning) {
       this.handleButtonClick();
-    } else {
-      const isPasteHotkey = keyCode === KeyCodes.LETTER_V && (e.ctrlKey || e.metaKey);
-      const isTab = keyCode === KeyCodes.TAB;
-      const isPitchBaseName = keyCode >= KeyCodes.LETTER_A && keyCode <= KeyCodes.LETTER_G;
-      const isSharpSymbolKey = keyCode === KeyCodes.DIGIT_3;
-      const isFlatSymbolKey = keyCode === KeyCodes.LETTER_B;
-      const isSpaceBar = keyCode === KeyCodes.SPACE;
-      const isArrowKey = keyCode >= KeyCodes.ARROW_LEFT && keyCode <= KeyCodes.ARROW_DOWN;
-      const isBackspace = keyCode === KeyCodes.BACKSPACE;
-      const isDelete = keyCode === KeyCodes.DELETE;
-      const isParen = (keyCode === KeyCodes.DIGIT_9 || keyCode === KeyCodes.DIGIT_0) && e.shiftKey;
-      const isSeven = keyCode === KeyCodes.DIGIT_7; // For expressing names of forced seventh chords in parens.
-
-      if (
-        !isPasteHotkey &&
-        !isTab &&
-        !isPitchBaseName &&
-        !isSharpSymbolKey &&
-        !isFlatSymbolKey &&
-        !isSpaceBar &&
-        !isArrowKey &&
-        !isBackspace &&
-        !isDelete &&
-        !isParen &&
-        !isSeven
-      ) {
-        e.preventDefault();
-      }
     }
   };
 
@@ -198,7 +187,7 @@ export class App extends React.PureComponent<{}, IAppState> {
       const token = tokens[i];
       const match = token.match(PITCH_INPUT_REGEX);
       if (match != null) {
-        const pitch = match[1] as Pitch;
+        const pitch = match[1].toUpperCase() as Pitch;
         const chordName = match[3];
         if (chordName != null) {
           // TODO: Accept chordName instead of chord.
@@ -215,7 +204,7 @@ export class App extends React.PureComponent<{}, IAppState> {
   }
 
   private getSanitizedMelodyInput(melodyInput: string): string {
-    return melodyInput.replace("3", "#").toUpperCase();
+    return melodyInput.replace("3", "#");
   };
 
   private maybeRenderResults() {

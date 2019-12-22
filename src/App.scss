@@ -28,3 +28,9 @@ body {
     color: $white;
   }
 }
+
+@media screen and (max-width: 768px) {
+  .hz-pagination-controls-text {
+    display: none !important;
+  }
+}

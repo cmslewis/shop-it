@@ -237,7 +237,7 @@ const allRules: IChordProgressionBigram[] = [
     ...TritoneSubstitutionRules,
 ];
 
-const ValidFirstChords = new Set<IChord>([Chord.C, Chord.Am7]);
+const ValidFirstChords = new Set<IChord>([Chord.C, Chord.Am7, Chord.G7]);
 
 let p2c: Map<string, Set<IChord>> = new Map();
 let c2c_all: Map<string, Set<IChord>> = new Map();
@@ -298,7 +298,7 @@ function harmonizeRec(melodyNotes: MelodyNote[], chordsSoFar: IChord[], circleOf
     } else {
         const remainingMelodyNotes = melodyNotes.slice(1);
         for (const c of chordsToConsider) {
-            if (chordsSoFar.length !== 0 || ValidFirstChords.has(c)) {
+            if (chordsSoFar.length !== 0 || ValidFirstChords.has(c) || (typeof firstMelodyNote !== "string" && c === firstMelodyNote.chord)) {
                 harmonizeRec(remainingMelodyNotes, [...chordsSoFar, c], circleOfFifthsOnly, out);
             }
         }

@@ -33,7 +33,7 @@ export class ResultsPane extends React.PureComponent<IResultsPaneProps, IResults
             <strong>No harmonizations found!</strong>
           </p>
           <p>
-            This doesn't mean there's no way to harmonize this line&mdash;it just means that no progression was found that relies solely on the limited rules this system is aware of.
+            This doesn't mean there's no way to harmonize this line&mdash;it just means that no progression was found that relies solely on the limited rules this system defines.
           </p>
         </Card>
       )
