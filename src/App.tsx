@@ -82,6 +82,7 @@ export class App extends React.PureComponent<{}, IAppState> {
           </ControlGroup>
         </FormGroup>
         {this.maybeRenderResults()}
+        <div className="hz-attribution">Hastily built by <a href="https://www.github.com/cmslewis" target="_blank">Chris Lewis</a> from Dec 19 - 21, 2019.</div>
       </div>
     );
   }

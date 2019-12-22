@@ -29,6 +29,29 @@ body {
   }
 }
 
+.hz-attribution {
+  position: relative;
+  margin-top: 20px;
+  padding-top: 10px;
+  font-size: $pt-font-size-small;
+  text-align: center;
+  color: $gray3;
+
+  &:before {
+    content: "";
+    width: 20px;
+    border-top: 1px solid $gray5;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    margin-left: -10px;
+  }
+
+  a {
+    color: $gray3;
+  }
+}
+
 @media screen and (max-width: 768px) {
   .hz-pagination-controls-text {
     display: none !important;
