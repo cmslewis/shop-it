@@ -1,5 +1,5 @@
 import React from "react";
-import { InputGroup, FormGroup, ControlGroup, Button, Intent, Classes, Position, Menu, MenuItem, Popover, IconName, Icon } from "@blueprintjs/core";
+import { InputGroup, FormGroup, ControlGroup, Button, Intent, Classes, Position, Menu, MenuItem, Popover, IconName } from "@blueprintjs/core";
 import "./App.scss";
 import { ResultsPane } from "./components/ResultsPane";
 import { Pitch, IChord, harmonize, MelodyNote } from "./harmonization/harmonize";
@@ -9,7 +9,6 @@ const KeyCodes = {
   ENTER: 13,
 };
 
-const DEFAULT_MELODY: Pitch[] = ["E", "D", "C", "D", "E"];
 const MAX_MELODY_LENGTH = 15;
 const PITCH_INPUT_REGEX = /^([A-Ga-g][#b]?)(\(([A-Ga-g][#b]?(m7|7)?)\))?$/; // E, F#, C(C), C(Am7)
 
@@ -54,7 +53,7 @@ export class App extends React.PureComponent<{}, IAppState> {
           <li><strong>Progression permissivity.</strong> You can decide whether to allow only basic Circle of Fifths motion (e.g. II7 → V7 → I) or additional progressions as well (e.g. I#7 → I7, tritone substitution). Permitting all progressions will give many more results.</li>
           <li><strong>Melody length.</strong> For performance reasons, melodies can be at most 15 pitches long. Computating anything longer would likely cook your browser.</li>
           <li><strong>Letter casing.</strong> Case matters only for chord names (e.g. because AM7 and Am7 are distinct chords). Case does not matter for pitch names.</li>
-          <li><strong>Playing chords.</strong> You can play through progressions using <a href="http://cmslewis.github.io/keyano/" target="_blank">Keyano</a>, a browser-based piano, if you want.</li>
+          <li><strong>Playing chords.</strong> You can play through progressions using <a href="http://cmslewis.github.io/keyano/" target="_blank" rel="noopener noreferrer">Keyano</a>, a browser-based piano, if you want.</li>
         </ul>
         <FormGroup
           helperText={helperText}
@@ -83,7 +82,7 @@ export class App extends React.PureComponent<{}, IAppState> {
           </ControlGroup>
         </FormGroup>
         {this.maybeRenderResults()}
-        <div className="hz-attribution">Hastily built by <a href="https://www.github.com/cmslewis" target="_blank">Chris Lewis</a> from Dec 19 - 21, 2019.</div>
+        <div className="hz-attribution">Hastily built by <a href="https://www.github.com/cmslewis" target="_blank" rel="noopener noreferrer">Chris Lewis</a> from Dec 19 - 21, 2019.</div>
       </div>
     );
   }
