@@ -2,7 +2,8 @@ import React from "react";
 import { InputGroup, FormGroup, ControlGroup, Button, Intent, Classes, Position, Menu, MenuItem, Popover, IconName, Icon } from "@blueprintjs/core";
 import "./App.scss";
 import { ResultsPane } from "./components/ResultsPane";
-import { Pitch, IChord, harmonize } from "./harmonization/harmonize";
+import { Pitch, IChord, harmonize, MelodyNote } from "./harmonization/harmonize";
+import { Chord } from "./harmonization/harmonize";
 
 const KeyCodes = {
   BACKSPACE: 8,
@@ -12,7 +13,10 @@ const KeyCodes = {
   ARROW_LEFT: 37,
   ARROW_DOWN: 40,
   DELETE: 46,
+  DIGIT_0: 48,
   DIGIT_3: 51,
+  DIGIT_7: 55,
+  DIGIT_9: 57,
   LETTER_A: 65,
   LETTER_B: 66,
   LETTER_G: 71,
@@ -21,6 +25,7 @@ const KeyCodes = {
 
 const DEFAULT_MELODY: Pitch[] = ["E", "D", "C", "D", "E"];
 const MAX_MELODY_LENGTH = 15;
+const PITCH_INPUT_REGEX = /^([A-G][#b]?)(\(([A-G][#b]?(m7|7)?)\))?$/; // E, F#, C(C), C(Am7)
 
 interface IAppState {
   circleOfFifthsOnly: boolean;
@@ -43,7 +48,7 @@ export class App extends React.PureComponent<{}, IAppState> {
     const { showMelodyLengthWarning } = this.state;
     const helperText = showMelodyLengthWarning
       ? "Melodies can't be longer than 15 notes—otherwise your browser may freeze."
-      : "Accidentals like F# and Bb are supported. Melodies can be no longer than 15 notes."
+      : "To force a particular chord for a particular note, put the chord name in parentheses after the pitch: F#(D7)."
     return (
       <div className="hz-app">
         <h1>BBS Harmonizer</h1>
@@ -157,6 +162,8 @@ export class App extends React.PureComponent<{}, IAppState> {
       const isArrowKey = keyCode >= KeyCodes.ARROW_LEFT && keyCode <= KeyCodes.ARROW_DOWN;
       const isBackspace = keyCode === KeyCodes.BACKSPACE;
       const isDelete = keyCode === KeyCodes.DELETE;
+      const isParen = (keyCode === KeyCodes.DIGIT_9 || keyCode === KeyCodes.DIGIT_0) && e.shiftKey;
+      const isSeven = keyCode === KeyCodes.DIGIT_7; // For expressing names of forced seventh chords in parens.
 
       if (
         !isPasteHotkey &&
@@ -167,7 +174,9 @@ export class App extends React.PureComponent<{}, IAppState> {
         !isSpaceBar &&
         !isArrowKey &&
         !isBackspace &&
-        !isDelete
+        !isDelete &&
+        !isParen &&
+        !isSeven
       ) {
         e.preventDefault();
       }
@@ -181,42 +190,36 @@ export class App extends React.PureComponent<{}, IAppState> {
     this.setState({ results: harmonize(melody, circleOfFifthsOnly) });
   };
 
-  private parseMelodyNotes(melodyString: string): Pitch[] {
-    return melodyString.trim().split(/\s+/) as Pitch[];;
+  private parseMelodyNotes(melodyString: string): MelodyNote[] {
+    // TODO: Better intepreter.
+    const tokens = melodyString.split(" ");
+    const melodyNotes: MelodyNote[] = [];
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+      const match = token.match(PITCH_INPUT_REGEX);
+      if (match != null) {
+        const pitch = match[1] as Pitch;
+        const chordName = match[3];
+        if (chordName != null) {
+          // TODO: Accept chordName instead of chord.
+          const chord = (Chord as any)[chordName] as IChord | undefined;
+          melodyNotes.push({ pitch, chord });
+        } else {
+          melodyNotes.push({ pitch });
+        }
+      } else {
+        // Invalid pitch.
+      }
+    }
+    return melodyNotes;
   }
 
   private getSanitizedMelodyInput(melodyInput: string): string {
-    const result: string[] = [];
-    for (let i = 0; i < melodyInput.length; i++) {
-      let char = melodyInput[i].toUpperCase();
-      if (char === "3") {
-        char = "#";
-      }
-      if (i > 0 && isPitchName(char)) {
-        result.push(" ");
-      }
-      // Allow one space at the end.
-      if (char != " " || i === melodyInput.length - 1) {
-        result.push(char);
-      }
-    }
-    return result.join("");
+    return melodyInput.replace("3", "#").toUpperCase();
   };
 
   private maybeRenderResults() {
     const { results } = this.state;
     return results === undefined ? undefined : <ResultsPane results={results}></ResultsPane>;
   }
-}
-
-function isPitchName(char: string) {
-  return (
-    char === "A" ||
-    char === "B" ||
-    char === "C" ||
-    char === "D" ||
-    char === "E" ||
-    char === "F" ||
-    char === "G"
-  );
 }
