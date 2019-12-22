@@ -17,6 +17,18 @@ Enter a sequence of pitches in C Major, then click "Harmonize" to see various ba
 - **Letter casing.** Case matters only for chord names (e.g. because AM7 and Am7 are distinct chords). Case does not matter for pitch names.
 - **Playing chords.** You can play through progressions using [Keyano](https://cmslewis.github.io/keyano), a browser-based piano, if you want.
 
+## Development
+
+### Deploying
+
+To deploy to Github Pages, run the following:
+
+```
+yarn run deploy
+```
+
+Then go to https://cmslewis.github.io/shop-it.
+
 ---
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
