@@ -17,9 +17,17 @@ Enter a sequence of pitches in C Major, then click "Harmonize" to see various ba
 - **Letter casing.** Case matters only for chord names (e.g. because AM7 and Am7 are distinct chords). Case does not matter for pitch names.
 - **Playing chords.** You can play through progressions using [Keyano](https://cmslewis.github.io/keyano), a browser-based piano, if you want.
 
-## Development
+## How this works
 
-### Deploying
+While arranging barbershop music, I've often wished for a tool that could quickly show me all legal-ish chord progressions that are possible for a certain sequence of melody notes. This is a scrappy, two-day attempt at building such a tool.
+
+This is a decidedly **rules-based** harmonization engine. That means that there is an explicit, curated list of rules dictating how each chord is allowed to progress. For instance, G7 may always go to C, while C can go anywhere, since it's the tonic. The rules are stitched together to build a graph of all possible chord progressions, then for a given melody, recursive backtracking is used to find all harmonic paths "out of the maze." This system isn't particularly robust&mdash;it's mostly just a quick proof of concept. But it does spit out some interesting results!
+
+This is intentionally _not_ powered by a Machine Learning model. In the past, I built an ML model for harmonizing melodies using a [Hidden Markov Model](https://en.wikipedia.org/wiki/Hidden_Markov_model) trained on Bach chorales. That approach may yield a more statistically defensible result for any given melody, but it would have required more training data than I had time to create, and it also tends to give boring, least-common-denominator harmonizations. In contrast, the rules-based engine here just returns all reasonable-ish progressions for you to peruse. The result is a much greater appreciation for the complexities of barbershop arranging. :)
+
+To learn more about barbershop, visit the Barbershop Harmony Society's [website](http://barbershop.org/). To learn more about the chorus I direct, visit the Fog City Singers' [website](https://www.fogcitysingers.com/).
+
+## Deploying
 
 To deploy to Github Pages, run the following:
 
@@ -59,19 +67,3 @@ The build is minified and the filenames include the hashes.<br />
 Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `yarn eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
