@@ -1,3 +1,24 @@
+# 'Shop It: A Simple Barbershop Harmonizer
+
+Enter a sequence of pitches in C Major, then click "Harmonize" to see various barbershop chord progressions for that melody. Brought to you by recursive backtracking.
+
+### Examples
+
+- **Down Our Way**: `E B A G A E D`
+- **Mary Had a Little Lamb**: `E D C D E E E`
+- **Chromatic scale**: `C C# D D# E F F# G`
+- **Santa Fe**: `G(G7) F E(C) G F E(Am7)`
+
+### Notes
+
+- **Forced chords.** You can force a particular chord for a particular melody note. Just put the chord name in parentheses after the pitch: F#(D7). Make sure the forced chord actually contains the pitch—you won't see any validation messages or error messages if not.
+- **Progression permissivity.** You can decide whether to allow only basic Circle of Fifths motion (e.g. II7 → V7 → I) or additional progressions as well (e.g. I#7 → I7, tritone substitution). Permitting all progressions will give many more results.
+- **Melody length.** For performance reasons, melodies can be at most 15 pitches long. Computating anything longer would likely cook your browser.
+- **Letter casing.** Case matters only for chord names (e.g. because AM7 and Am7 are distinct chords). Case does not matter for pitch names.
+- **Playing chords.** You can play through progressions using [Keyano](https://cmslewis.github.io/keyano), a browser-based piano, if you want.
+
+---
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
