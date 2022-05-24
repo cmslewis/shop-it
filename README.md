@@ -1,4 +1,4 @@
-# 'Shop It: A Simple Barbershop Harmonizer
+# 💈 'Shop It: A Simple Barbershop Harmonizer
 
 Enter a sequence of pitches in C Major, then click "Harmonize" to see various barbershop chord progressions for that melody. Brought to you by recursive backtracking.
 
